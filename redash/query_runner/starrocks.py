@@ -94,8 +94,8 @@ class Starrocks(BaseSQLQueryRunner):
         return connection
     
 
-    def _get_tables(self, schema):
 
+    def _get_tables(self, schema):
         query = """
         SELECT col.table_schema as table_schema,
                col.table_name as table_name,
@@ -110,7 +110,7 @@ class Starrocks(BaseSQLQueryRunner):
             self._handle_run_query_error(error)
 
         for row in results["rows"]:
-            if row["table_schema"] != self.configuration["db"]:
+            if row["table_schema"] != self.configuration["database"]:
                 table_name = "{}.{}".format(row["table_schema"], row["table_name"])
             else:
                 table_name = row["table_name"]
