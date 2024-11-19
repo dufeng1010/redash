@@ -92,6 +92,36 @@ class Starrocks(BaseSQLQueryRunner):
         connection = MySQLdb.connect(**params)
 
         return connection
+    
+
+    def _get_tables(self, schema):
+
+        query = """
+        SELECT col.table_schema as table_schema,
+               col.table_name as table_name,
+               col.column_name as column_name
+        FROM `information_schema`.`columns` col
+        WHERE col.table_schema NOT IN ('information_schema', 'performance_schema', 'mysql', 'sys');
+        """
+
+        results, error = self.run_query(query, None)
+
+        if error is not None:
+            self._handle_run_query_error(error)
+
+        for row in results["rows"]:
+            if row["table_schema"] != self.configuration["db"]:
+                table_name = "{}.{}".format(row["table_schema"], row["table_name"])
+            else:
+                table_name = row["table_name"]
+
+            if table_name not in schema:
+                schema[table_name] = {"name": table_name, "columns": []}
+
+            schema[table_name]["columns"].append(row["column_name"])
+
+        return list(schema.values())
+
 
         
     def run_query(self, query, user):
